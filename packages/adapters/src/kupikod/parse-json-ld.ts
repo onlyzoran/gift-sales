@@ -1,4 +1,4 @@
-type JsonLdNode = Record<string, unknown>;
+export type JsonLdNode = Record<string, unknown>;
 
 export function extractJsonLdBlocks(html: string): JsonLdNode[] {
   const blocks: JsonLdNode[] = [];
