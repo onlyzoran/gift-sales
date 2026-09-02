@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6 (2026-09-02)
+
+* API котировок: quotes, best, sources ([PR](https://github.com/onlyzoran/gift-sales/pull/6), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/47))
+
 ## 0.1.5 (2026-09-02)
 
 * systemd timer для collector ([PR](https://github.com/onlyzoran/gift-sales/pull/5), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/46))

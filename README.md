@@ -37,6 +37,28 @@ packages/
 
 Ant Design подключён в `src/app/layout.tsx` через `ConfigProvider` и `@ant-design/nextjs-registry`.
 
+## HTTP API котировок
+
+Базовый путь приложения: `/gift-sales`. Эндпоинты:
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| GET | `/gift-sales/api/quotes` | Котировки по `brand` (+ опц. `region`, `face_value`) |
+| GET | `/gift-sales/api/quotes/best` | Лучшая цена по каждой паре номинал+регион |
+| GET | `/gift-sales/api/sources` | Источники и время последнего сбора |
+
+Whitelist брендов — `brands.yaml`. Данные — SQLite `data/quotes.db` (пакет `@gift-sales/storage`).
+
+Контракт ответов и коды ошибок — [packages/storage/README.md](packages/storage/README.md).
+
+Примеры:
+
+```bash
+curl "http://localhost:3000/gift-sales/api/quotes?brand=apple"
+curl "http://localhost:3000/gift-sales/api/quotes/best?brand=apple"
+curl "http://localhost:3000/gift-sales/api/sources"
+```
+
 ## Демо
 
 Preview сборки по Goal #42: [http://202.71.15.138/gift-sales/preview/issue-42/](http://202.71.15.138/gift-sales/preview/issue-42/)

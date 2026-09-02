@@ -201,6 +201,96 @@ describe("QuoteRepository", () => {
     );
   });
 
+  it("getBestQuotes returns the lowest price per face_value and region", () => {
+    repo.saveQuotes([
+      makeQuote({
+        face_value: 100,
+        region: "US",
+        source: "store-a",
+        price_rub: 9500,
+        fetched_at: "2026-09-01T10:00:00.000Z",
+      }),
+      makeQuote({
+        face_value: 100,
+        region: "US",
+        source: "store-b",
+        price_rub: 9200,
+        fetched_at: "2026-09-01T10:00:00.000Z",
+      }),
+      makeQuote({
+        face_value: 100,
+        region: "US",
+        source: "store-a",
+        price_rub: 9400,
+        fetched_at: "2026-09-01T12:00:00.000Z",
+      }),
+      makeQuote({
+        face_value: 50,
+        region: "EU",
+        source: "store-a",
+        price_rub: 4800,
+        fetched_at: "2026-09-01T10:00:00.000Z",
+      }),
+      makeQuote({
+        face_value: 50,
+        region: "EU",
+        source: "store-b",
+        price_rub: 5000,
+        fetched_at: "2026-09-01T10:00:00.000Z",
+      }),
+    ]);
+
+    const best = repo.getBestQuotes("apple");
+
+    assert.equal(best.length, 2);
+
+    const us100 = best.find(
+      (quote) => quote.face_value === 100 && quote.region === "US",
+    );
+    assert.ok(us100);
+    assert.equal(us100.source, "store-b");
+    assert.equal(us100.price_rub, 9200);
+
+    const eu50 = best.find(
+      (quote) => quote.face_value === 50 && quote.region === "EU",
+    );
+    assert.ok(eu50);
+    assert.equal(eu50.source, "store-a");
+    assert.equal(eu50.price_rub, 4800);
+  });
+
+  it("getSourceLastFetchedAt returns max fetched_at per source", () => {
+    repo.saveQuotes([
+      makeQuote({
+        source: "store-a",
+        fetched_at: "2026-09-01T10:00:00.000Z",
+      }),
+      makeQuote({
+        source: "store-a",
+        fetched_at: "2026-09-01T12:00:00.000Z",
+      }),
+      makeQuote({
+        source: "store-b",
+        fetched_at: "2026-09-01T11:00:00.000Z",
+      }),
+    ]);
+
+    const sources = repo.getSourceLastFetchedAt().sort((a, b) =>
+      a.source.localeCompare(b.source),
+    );
+
+    assert.deepEqual(sources, [
+      {
+        source: "store-a",
+        last_fetched_at: "2026-09-01T12:00:00.000Z",
+      },
+      {
+        source: "store-b",
+        last_fetched_at: "2026-09-01T11:00:00.000Z",
+      },
+    ]);
+  });
+
   it("persists data to a file-backed database", () => {
     const dir = mkdtempSync(join(tmpdir(), "gift-sales-storage-"));
     const dbPath = join(dir, "quotes.db");
