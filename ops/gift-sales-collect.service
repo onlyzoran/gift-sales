@@ -1,0 +1,17 @@
+[Unit]
+Description=gift-sales price collector (oneshot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=cursor-worker
+Group=cursor-worker
+WorkingDirectory=/var/lib/gift-sales/app
+EnvironmentFile=-/etc/cursor-worker.env
+Environment=HOME=/opt/cursor-workers
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+NoNewPrivileges=true
+TimeoutStartSec=30min
+ExecStart=/usr/bin/npm run collect -- --config /var/lib/gift-sales/sources.yaml --db /var/lib/gift-sales/data/quotes.db
