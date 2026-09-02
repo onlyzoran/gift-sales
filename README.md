@@ -14,11 +14,14 @@ npm run dev
 npm run build
 npm run lint
 npm run test
+npm run collect -- --dry-run
 ```
 
 - `npm run dev` — локальный dev-сервер Next.js (http://localhost:3000)
 - `npm run build` — production-сборка
 - `npm run lint` — ESLint по проекту
+- `npm run collect` — сбор котировок из источников в `sources.yaml` в SQLite `data/quotes.db`
+- `npm run collect -- --dry-run` — тот же прогон на fixture HTML без live HTTP (удобно локально и в CI)
 
 ## Структура
 
