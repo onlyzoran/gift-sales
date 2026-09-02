@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.4 (2026-09-02)
+
+* Collector CLI: sources.yaml → kupikod → SQLite ([PR](https://github.com/onlyzoran/gift-sales/pull/4), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/45))
 
 * Collector CLI: `sources.yaml` → адаптеры → `data/quotes.db` (`npm run collect`, флаг `--dry-run`)
 
