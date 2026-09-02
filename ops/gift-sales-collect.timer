@@ -1,0 +1,12 @@
+[Unit]
+Description=Run gift-sales collector every 30 minutes after the previous run finishes
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=30min
+AccuracySec=1min
+Persistent=true
+Unit=gift-sales-collect.service
+
+[Install]
+WantedBy=timers.target
