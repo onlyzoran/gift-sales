@@ -31,3 +31,7 @@ packages/
 ```
 
 Ant Design подключён в `src/app/layout.tsx` через `ConfigProvider` и `@ant-design/nextjs-registry`.
+
+## Демо
+
+Preview сборки по Goal #42: [http://202.71.15.138/gift-sales/preview/issue-42/](http://202.71.15.138/gift-sales/preview/issue-42/)
