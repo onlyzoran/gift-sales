@@ -112,6 +112,49 @@ export class QuoteRepository {
     return rows.map(rowToQuote);
   }
 
+  getBestQuotes(brand: string): Quote[] {
+    const latest = this.getLatestQuotes({ brand });
+    const bestByKey = new Map<string, Quote>();
+
+    for (const quote of latest) {
+      const key = `${quote.face_value}\0${quote.region}`;
+      const current = bestByKey.get(key);
+
+      if (
+        !current ||
+        quote.price_rub < current.price_rub ||
+        (quote.price_rub === current.price_rub &&
+          quote.source.localeCompare(current.source) < 0)
+      ) {
+        bestByKey.set(key, quote);
+      }
+    }
+
+    return Array.from(bestByKey.values()).sort((a, b) => {
+      if (a.face_value !== b.face_value) {
+        return a.face_value - b.face_value;
+      }
+      return a.region.localeCompare(b.region);
+    });
+  }
+
+  getSourceLastFetchedAt(): Array<{
+    source: string;
+    last_fetched_at: string;
+  }> {
+    const rows = this.db
+      .prepare(
+        `
+        SELECT source, MAX(fetched_at) AS last_fetched_at
+        FROM quotes
+        GROUP BY source
+      `,
+      )
+      .all() as Array<{ source: string; last_fetched_at: string }>;
+
+    return rows;
+  }
+
   getQuoteHistory(params: QuoteHistoryParams): Quote[] {
     const conditions = [
       "brand = @brand",

@@ -10,13 +10,15 @@
     "build": "next build",
     "lint": "eslint .",
     "start": "next start",
-    "test": "npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters && npm run test --workspace @gift-sales/collector",
+    "test": "npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters && npm run test --workspace @gift-sales/collector && node --import tsx --test src/lib/**/*.test.ts",
     "collect": "node --import tsx packages/collector/src/cli.ts",
     "collect:kupikod": "node --import tsx scripts/collect-kupikod.ts"
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
+    "@gift-sales/storage": "*",
     "antd": "^5.26.0",
+    "js-yaml": "^4.1.0",
     "next": "^15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -28,6 +30,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.3.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.0"
   }
 }
