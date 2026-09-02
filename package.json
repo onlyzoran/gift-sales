@@ -1,6 +1,6 @@
 {
   "name": "gift-sales",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -10,7 +10,8 @@
     "build": "next build",
     "lint": "eslint .",
     "start": "next start",
-    "test": "npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters",
+    "test": "npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters && npm run test --workspace @gift-sales/collector",
+    "collect": "node --import tsx packages/collector/src/cli.ts",
     "collect:kupikod": "node --import tsx scripts/collect-kupikod.ts"
   },
   "dependencies": {

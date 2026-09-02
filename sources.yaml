@@ -1,0 +1,6 @@
+kupikod:
+  enabled: true
+  catalog_url: https://kupikod.com/shop/podarocnye-karty/appstore-itunes
+
+apple:
+  enabled: false
