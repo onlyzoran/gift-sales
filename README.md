@@ -13,6 +13,7 @@ npm install
 npm run dev
 npm run build
 npm run lint
+npm run test
 ```
 
 - `npm run dev` — локальный dev-сервер Next.js (http://localhost:3000)
@@ -28,6 +29,7 @@ src/
 packages/
   collector/    — cron-сбор цен с источников
   adapters/     — адаптеры к внешним API и форматам
+  storage/      — модель Quote и SQLite-репозиторий
 ```
 
 Ant Design подключён в `src/app/layout.tsx` через `ConfigProvider` и `@ant-design/nextjs-registry`.
