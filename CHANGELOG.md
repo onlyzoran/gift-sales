@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5 (2026-09-02)
+
+* systemd timer для collector ([PR](https://github.com/onlyzoran/gift-sales/pull/5), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/46))
+
 ## 0.1.4 (2026-09-02)
 
 * Collector CLI: sources.yaml → kupikod → SQLite ([PR](https://github.com/onlyzoran/gift-sales/pull/4), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/45))
