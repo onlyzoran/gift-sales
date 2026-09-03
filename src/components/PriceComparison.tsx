@@ -4,10 +4,9 @@ import { Alert, Typography } from "antd";
 import type { QuoteResponse } from "@gift-sales/storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BestPricesGrid } from "@/components/BestPricesGrid";
 import { QuoteFilters, type QuoteFilterValues } from "@/components/QuoteFilters";
 import { QuotesTable } from "@/components/QuotesTable";
-import { fetchBestQuotes, fetchQuotes, QuotesFetchError } from "@/lib/api/quotes-client";
+import { fetchQuotes, QuotesFetchError } from "@/lib/api/quotes-client";
 import { formatFaceValue } from "@/lib/format";
 
 const DEFAULT_BRAND = "apple";
@@ -20,50 +19,29 @@ const KNOWN_BRANDS = [
 export function PriceComparison() {
   const [filters, setFilters] = useState<QuoteFilterValues>({ brand: DEFAULT_BRAND });
   const [optionQuotes, setOptionQuotes] = useState<QuoteResponse[]>([]);
-  const [bestQuotes, setBestQuotes] = useState<QuoteResponse[]>([]);
   const [tableQuotes, setTableQuotes] = useState<QuoteResponse[]>([]);
 
   const [optionsLoading, setOptionsLoading] = useState(true);
-  const [bestLoading, setBestLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
 
   const [optionsError, setOptionsError] = useState<string | null>(null);
-  const [bestError, setBestError] = useState<string | null>(null);
   const [tableError, setTableError] = useState<string | null>(null);
 
-  const loadOptionsAndBest = useCallback(async (brand: string) => {
+  const loadOptions = useCallback(async (brand: string) => {
     setOptionsLoading(true);
-    setBestLoading(true);
     setOptionsError(null);
-    setBestError(null);
 
-    const [optionsResult, bestResult] = await Promise.allSettled([
-      fetchQuotes({ brand }),
-      fetchBestQuotes(brand),
-    ]);
-
-    if (optionsResult.status === "fulfilled") {
-      setOptionQuotes(optionsResult.value);
-    } else {
-      const error = optionsResult.reason;
+    try {
+      const quotes = await fetchQuotes({ brand });
+      setOptionQuotes(quotes);
+    } catch (error) {
       setOptionQuotes([]);
       setOptionsError(
         error instanceof QuotesFetchError ? error.message : "Не удалось загрузить фильтры",
       );
+    } finally {
+      setOptionsLoading(false);
     }
-
-    if (bestResult.status === "fulfilled") {
-      setBestQuotes(bestResult.value);
-    } else {
-      const error = bestResult.reason;
-      setBestQuotes([]);
-      setBestError(
-        error instanceof QuotesFetchError ? error.message : "Не удалось загрузить лучшие цены",
-      );
-    }
-
-    setOptionsLoading(false);
-    setBestLoading(false);
   }, []);
 
   const loadTable = useCallback(async (nextFilters: QuoteFilterValues) => {
@@ -84,8 +62,8 @@ export function PriceComparison() {
   }, []);
 
   useEffect(() => {
-    void loadOptionsAndBest(filters.brand);
-  }, [filters.brand, loadOptionsAndBest]);
+    void loadOptions(filters.brand);
+  }, [filters.brand, loadOptions]);
 
   useEffect(() => {
     void loadTable(filters);
@@ -141,7 +119,7 @@ export function PriceComparison() {
     setFilters(nextFilters);
   };
 
-  const visibleError = tableError ?? bestError ?? optionsError;
+  const visibleError = tableError ?? optionsError;
 
   return (
     <div className="price-comparison">
@@ -162,11 +140,6 @@ export function PriceComparison() {
           style={{ marginTop: 16 }}
         />
       )}
-
-      <section className="price-section">
-        <Typography.Title level={4}>Лучшая цена</Typography.Title>
-        <BestPricesGrid quotes={bestQuotes} loading={bestLoading} />
-      </section>
 
       <section className="price-section">
         <Typography.Title level={4}>Все котировки</Typography.Title>
