@@ -13,9 +13,10 @@ export function AntdProvider({ children }: AntdProviderProps) {
     <AntdRegistry>
       <ConfigProvider
         theme={{
-          algorithm: theme.defaultAlgorithm,
+          algorithm: theme.darkAlgorithm,
           token: {
-            colorPrimary: "#1677ff",
+            colorPrimary: "#4096ff",
+            borderRadius: 6,
           },
         }}
       >

@@ -13,4 +13,31 @@ body {
     "Helvetica Neue",
     Arial,
     sans-serif;
+  background: #141414;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.page-main {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.quote-filters {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.price-comparison .price-section {
+  margin-top: 32px;
+}
+
+.price-comparison .price-section h4 {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 576px) {
+  .page-main {
+    padding: 16px;
+  }
 }
