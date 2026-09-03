@@ -4,9 +4,18 @@ import { Alert, Typography } from "antd";
 import type { QuoteResponse } from "@gift-sales/storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { BestPricesGrid } from "@/components/BestPricesGrid";
 import { QuoteFilters, type QuoteFilterValues } from "@/components/QuoteFilters";
+import {
+  QuoteHistoryDrawer,
+  type QuoteHistorySelection,
+} from "@/components/QuoteHistoryDrawer";
 import { QuotesTable } from "@/components/QuotesTable";
-import { fetchQuotes, QuotesFetchError } from "@/lib/api/quotes-client";
+import {
+  fetchBestQuotes,
+  fetchQuotes,
+  QuotesFetchError,
+} from "@/lib/api/quotes-client";
 import { formatFaceValue } from "@/lib/format";
 
 const DEFAULT_BRAND = "apple";
@@ -16,16 +25,42 @@ const KNOWN_BRANDS = [
   { value: "steam", label: "Steam" },
 ];
 
+function toHistorySelection(quote: QuoteResponse): QuoteHistorySelection {
+  return {
+    brand: quote.brand,
+    face_value: quote.face_value,
+    face_currency: quote.face_currency,
+    region: quote.region,
+  };
+}
+
 export function PriceComparison() {
   const [filters, setFilters] = useState<QuoteFilterValues>({ brand: DEFAULT_BRAND });
   const [optionQuotes, setOptionQuotes] = useState<QuoteResponse[]>([]);
+  const [bestQuotes, setBestQuotes] = useState<QuoteResponse[]>([]);
   const [tableQuotes, setTableQuotes] = useState<QuoteResponse[]>([]);
 
   const [optionsLoading, setOptionsLoading] = useState(true);
+  const [bestLoading, setBestLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
 
   const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [bestError, setBestError] = useState<string | null>(null);
   const [tableError, setTableError] = useState<string | null>(null);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historySelection, setHistorySelection] = useState<QuoteHistorySelection | null>(
+    null,
+  );
+
+  const openHistory = useCallback((quote: QuoteResponse) => {
+    setHistorySelection(toHistorySelection(quote));
+    setHistoryOpen(true);
+  }, []);
+
+  const closeHistory = useCallback(() => {
+    setHistoryOpen(false);
+  }, []);
 
   const loadOptions = useCallback(async (brand: string) => {
     setOptionsLoading(true);
@@ -41,6 +76,25 @@ export function PriceComparison() {
       );
     } finally {
       setOptionsLoading(false);
+    }
+  }, []);
+
+  const loadBest = useCallback(async (brand: string) => {
+    setBestLoading(true);
+    setBestError(null);
+
+    try {
+      const quotes = await fetchBestQuotes(brand);
+      setBestQuotes(quotes);
+    } catch (error) {
+      setBestQuotes([]);
+      setBestError(
+        error instanceof QuotesFetchError
+          ? error.message
+          : "Не удалось загрузить лучшие цены",
+      );
+    } finally {
+      setBestLoading(false);
     }
   }, []);
 
@@ -63,7 +117,8 @@ export function PriceComparison() {
 
   useEffect(() => {
     void loadOptions(filters.brand);
-  }, [filters.brand, loadOptions]);
+    void loadBest(filters.brand);
+  }, [filters.brand, loadBest, loadOptions]);
 
   useEffect(() => {
     void loadTable(filters);
@@ -119,7 +174,7 @@ export function PriceComparison() {
     setFilters(nextFilters);
   };
 
-  const visibleError = tableError ?? optionsError;
+  const visibleError = tableError ?? bestError ?? optionsError;
 
   return (
     <div className="price-comparison">
@@ -142,9 +197,34 @@ export function PriceComparison() {
       )}
 
       <section className="price-section">
-        <Typography.Title level={4}>Все котировки</Typography.Title>
-        <QuotesTable quotes={tableQuotes} loading={tableLoading || optionsLoading} />
+        <Typography.Title level={4}>Лучшие цены</Typography.Title>
+        <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
+          Нажмите на карточку, чтобы посмотреть историю цены по номиналу и региону.
+        </Typography.Paragraph>
+        <BestPricesGrid
+          quotes={bestQuotes}
+          loading={bestLoading || optionsLoading}
+          onCardClick={openHistory}
+        />
       </section>
+
+      <section className="price-section">
+        <Typography.Title level={4}>Все котировки</Typography.Title>
+        <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
+          Нажмите на строку, чтобы открыть график истории цены.
+        </Typography.Paragraph>
+        <QuotesTable
+          quotes={tableQuotes}
+          loading={tableLoading || optionsLoading}
+          onRowClick={openHistory}
+        />
+      </section>
+
+      <QuoteHistoryDrawer
+        open={historyOpen}
+        selection={historySelection}
+        onClose={closeHistory}
+      />
     </div>
   );
 }

@@ -64,3 +64,34 @@ export async function fetchBestQuotes(brand: string): Promise<QuoteResponse[]> {
   const response = await fetch(apiUrl(`/api/quotes/best?${params.toString()}`));
   return parseQuotesResponse(response);
 }
+
+export type QuoteHistoryParams = {
+  brand: string;
+  faceValue: number;
+  region: string;
+  from?: string;
+  to?: string;
+};
+
+export async function fetchQuoteHistory(
+  params: QuoteHistoryParams,
+): Promise<QuoteResponse[]> {
+  const searchParams = new URLSearchParams({
+    brand: params.brand,
+    face_value: String(params.faceValue),
+    region: params.region,
+  });
+
+  if (params.from) {
+    searchParams.set("from", params.from);
+  }
+
+  if (params.to) {
+    searchParams.set("to", params.to);
+  }
+
+  const response = await fetch(
+    apiUrl(`/api/quotes/history?${searchParams.toString()}`),
+  );
+  return parseQuotesResponse(response);
+}
