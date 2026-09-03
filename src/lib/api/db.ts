@@ -5,7 +5,11 @@ import { QuoteRepository } from "@gift-sales/storage";
 const DEFAULT_DB_PATH = join(process.cwd(), "data", "quotes.db");
 
 export function getDbPath(): string {
-  return process.env.QUOTES_DB_PATH ?? DEFAULT_DB_PATH;
+  return (
+    process.env.GIFT_SALES_DB ??
+    process.env.QUOTES_DB_PATH ??
+    DEFAULT_DB_PATH
+  );
 }
 
 export function createQuoteRepository(): QuoteRepository {

@@ -48,7 +48,9 @@ Ant Design подключён в `src/app/layout.tsx` через `ConfigProvider
 | GET | `/gift-sales/api/quotes/best` | Лучшая цена по каждой паре номинал+регион |
 | GET | `/gift-sales/api/sources` | Источники и время последнего сбора |
 
-Whitelist брендов — `brands.yaml`. Данные — SQLite `data/quotes.db` (пакет `@gift-sales/storage`).
+Whitelist брендов — `brands.yaml`. Данные — SQLite (пакет `@gift-sales/storage`).
+
+Путь к БД: `GIFT_SALES_DB` → `QUOTES_DB_PATH` → `data/quotes.db` в cwd. Локально по умолчанию — `data/quotes.db`; prod на VPS — `/var/lib/gift-sales/data/quotes.db` (см. [ops/README.md](ops/README.md)).
 
 Контракт ответов и коды ошибок — [packages/storage/README.md](packages/storage/README.md).
 

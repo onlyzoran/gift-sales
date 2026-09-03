@@ -1,0 +1,22 @@
+[Unit]
+Description=gift-sales Next.js (production)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cursor-worker
+Group=cursor-worker
+WorkingDirectory=/opt/cursor-workers/gift-sales
+EnvironmentFile=-/etc/cursor-worker.env
+Environment=HOME=/opt/cursor-workers
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+Environment=GIFT_SALES_DB=/var/lib/gift-sales/data/quotes.db
+NoNewPrivileges=true
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
