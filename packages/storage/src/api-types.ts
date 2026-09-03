@@ -9,12 +9,18 @@ export type ApiErrorResponse = {
   code: string;
 };
 
+/** Category entry within a source from sources.yaml. */
+export type SourceCategoryResponse = {
+  url: string;
+  brand: string;
+};
+
 /** Source entry returned by GET /api/sources. */
 export type SourceResponse = {
-  source: string;
+  id: string;
+  base_url: string;
+  categories: SourceCategoryResponse[];
   last_fetched_at: string | null;
-  enabled?: boolean;
-  catalog_url?: string;
 };
 
 export const API_ERROR_CODES = {

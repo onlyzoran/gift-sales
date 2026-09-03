@@ -3,13 +3,16 @@ import { NextResponse } from "next/server";
 
 import { withQuoteRepository } from "@/lib/api/db";
 import { apiError } from "@/lib/api/errors";
-import { buildSourceResponses, loadSourcesYaml } from "@/lib/api/sources";
+import {
+  buildSourceResponses,
+  loadSourcesRegistryFromFile,
+} from "@/lib/api/sources";
 
 export async function GET(): Promise<Response> {
   try {
-    const yamlSources = loadSourcesYaml();
+    const registry = loadSourcesRegistryFromFile();
     const sources = withQuoteRepository((repo) =>
-      buildSourceResponses(yamlSources, repo.getSourceLastFetchedAt()),
+      buildSourceResponses(registry, repo.getSourceLastFetchedAt()),
     );
 
     return NextResponse.json(sources);

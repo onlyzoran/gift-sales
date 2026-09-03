@@ -1,6 +1,14 @@
-kupikod:
-  enabled: true
-  catalog_url: https://kupikod.com/shop/podarocnye-karty/appstore-itunes
+sources:
+  - id: kupikod
+    base_url: https://kupikod.com
+    rate_limit_rps: 2
+    categories:
+      - url: https://kupikod.com/shop/podarocnye-karty/appstore-itunes
+        brand: apple
 
-apple:
-  enabled: false
+  - id: apple-app-store
+    base_url: https://www.apple.com
+    rate_limit_rps: 1
+    categories:
+      - url: https://www.apple.com/shop/gift-cards
+        brand: apple
