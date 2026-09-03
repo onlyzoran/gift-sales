@@ -5,6 +5,7 @@ import type { QuoteResponse } from "@gift-sales/storage";
 import { LinkOutlined } from "@ant-design/icons";
 
 import { formatDiscountPct, formatFaceValue, formatPriceRub } from "@/lib/format";
+import { formatNominalUnitPrice } from "@/lib/nominal-unit-price";
 
 type BestPricesGridProps = {
   quotes: QuoteResponse[];
@@ -54,6 +55,9 @@ export function BestPricesGrid({ quotes, loading }: BestPricesGridProps) {
             </Typography.Title>
             <Typography.Text strong style={{ fontSize: 18 }}>
               {formatPriceRub(quote.price_rub)}
+            </Typography.Text>
+            <Typography.Text type="secondary" style={{ display: "block", marginTop: 4 }}>
+              {formatNominalUnitPrice(quote.price_rub, quote.face_value, quote.face_currency)}
             </Typography.Text>
             <div style={{ marginTop: 4 }}>
               <Typography.Text type="secondary">
