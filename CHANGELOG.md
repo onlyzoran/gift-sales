@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11 (2026-09-03)
+
+* API истории котировок GET /api/quotes/history ([PR](https://github.com/onlyzoran/gift-sales/pull/13), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/65))
+
 ## 0.1.10 (2026-09-03)
 
 * Скрыть блок «Лучшая цена» на главной ([PR](https://github.com/onlyzoran/gift-sales/pull/12), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/71))
