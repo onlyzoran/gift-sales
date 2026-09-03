@@ -10,9 +10,10 @@ import { formatNominalUnitPrice } from "@/lib/nominal-unit-price";
 type BestPricesGridProps = {
   quotes: QuoteResponse[];
   loading: boolean;
+  onCardClick?: (quote: QuoteResponse) => void;
 };
 
-export function BestPricesGrid({ quotes, loading }: BestPricesGridProps) {
+export function BestPricesGrid({ quotes, loading, onCardClick }: BestPricesGridProps) {
   if (loading) {
     return (
       <Row gutter={[12, 12]}>
@@ -46,7 +47,12 @@ export function BestPricesGrid({ quotes, loading }: BestPricesGridProps) {
           md={8}
           lg={6}
         >
-          <Card size="small" hoverable>
+          <Card
+            size="small"
+            hoverable
+            onClick={() => onCardClick?.(quote)}
+            style={onCardClick ? { cursor: "pointer" } : undefined}
+          >
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               {quote.region}
             </Typography.Text>
@@ -73,6 +79,7 @@ export function BestPricesGrid({ quotes, loading }: BestPricesGridProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ marginTop: 8, display: "inline-block" }}
+                onClick={(event) => event.stopPropagation()}
               >
                 <LinkOutlined /> В магазин
               </Typography.Link>

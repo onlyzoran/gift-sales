@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
+    "@ant-design/plots": "^2.6.8",
     "@gift-sales/config": "*",
     "@gift-sales/storage": "*",
     "antd": "^5.26.0",

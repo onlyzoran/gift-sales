@@ -16,11 +16,12 @@ import {
 type QuotesTableProps = {
   quotes: QuoteResponse[];
   loading: boolean;
+  onRowClick?: (quote: QuoteResponse) => void;
 };
 
 const NOMINAL_UNIT_PRICE_TOOLTIP = "Сколько рублей стоит 1 единица номинала карты";
 
-export function QuotesTable({ quotes, loading }: QuotesTableProps) {
+export function QuotesTable({ quotes, loading, onRowClick }: QuotesTableProps) {
   const columns = useMemo<ColumnsType<QuoteResponse>>(() => {
     const title = nominalUnitPriceColumnTitle(quotes.map((quote) => quote.face_currency));
 
@@ -84,7 +85,12 @@ export function QuotesTable({ quotes, loading }: QuotesTableProps) {
         key: "source_url",
         render: (_, record) =>
           record.source_url ? (
-            <a href={record.source_url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={record.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+            >
               <LinkOutlined /> Открыть
             </a>
           ) : (
@@ -114,6 +120,10 @@ export function QuotesTable({ quotes, loading }: QuotesTableProps) {
       pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total) => `Всего: ${total}` }}
       scroll={{ x: "max-content" }}
       size="middle"
+      onRow={(record) => ({
+        onClick: () => onRowClick?.(record),
+        style: onRowClick ? { cursor: "pointer" } : undefined,
+      })}
     />
   );
 }
