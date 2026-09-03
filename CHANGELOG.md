@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9 (2026-09-03)
+
+* Колонка «₽ за 1 единицу номинала» ([PR](https://github.com/onlyzoran/gift-sales/pull/10), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/69))
+
 ## 0.1.8 (2026-09-03)
 
 * Реестр sources.yaml со схемой и загрузчиком ([PR](https://github.com/onlyzoran/gift-sales/pull/8), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/49))
