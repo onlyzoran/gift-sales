@@ -10,7 +10,7 @@
     "build": "node scripts/prepare-export.mjs prepare && next build && node scripts/prepare-export.mjs restore",
     "lint": "eslint .",
     "start": "next start",
-    "test": "npm run test --workspace @gift-sales/config && npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters && npm run test --workspace @gift-sales/collector && node --import tsx --test src/lib/**/*.test.ts",
+    "test": "npm run test --workspace @gift-sales/config && npm run test --workspace @gift-sales/storage && npm run test --workspace @gift-sales/adapters && npm run test --workspace @gift-sales/collector && node --import tsx --test \"src/lib/**/*.test.ts\" \"src/lib/*.test.ts\"",
     "collect": "node --import tsx packages/collector/src/cli.ts",
     "collect:kupikod": "node --import tsx scripts/collect-kupikod.ts"
   },
