@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7 (2026-09-03)
+
+* UI сравнения цен на главной (Ant Design) ([PR](https://github.com/onlyzoran/gift-sales/pull/7), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/48))
+
 ## 0.1.6 (2026-09-02)
 
 * API котировок: quotes, best, sources ([PR](https://github.com/onlyzoran/gift-sales/pull/6), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/47))
