@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10 (2026-09-03)
+
+* Скрыть блок «Лучшая цена» на главной ([PR](https://github.com/onlyzoran/gift-sales/pull/12), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/71))
+
 ## 0.1.9 (2026-09-03)
 
 * Колонка «₽ за 1 единицу номинала» ([PR](https://github.com/onlyzoran/gift-sales/pull/11), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/69))
