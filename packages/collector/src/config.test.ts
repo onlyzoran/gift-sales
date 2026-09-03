@@ -3,50 +3,75 @@ import { describe, it } from "node:test";
 
 import { parseSourcesConfig } from "./config";
 
+const VALID_CONFIG = `
+sources:
+  - id: kupikod
+    base_url: https://kupikod.com
+    rate_limit_rps: 2
+    categories:
+      - url: https://kupikod.com/shop/catalog
+        brand: apple
+  - id: apple-app-store
+    base_url: https://www.apple.com
+    rate_limit_rps: 1
+    categories:
+      - url: https://www.apple.com/shop/gift-cards
+        brand: apple
+`;
+
 describe("parseSourcesConfig", () => {
-  it("parses kupikod and disabled apple sections", () => {
-    const config = parseSourcesConfig(`
-kupikod:
-  enabled: true
-  catalog_url: https://example.com/catalog
-apple:
-  enabled: false
-`);
-
-    assert.deepEqual(config, {
-      kupikod: {
-        enabled: true,
-        catalog_url: "https://example.com/catalog",
-      },
-      apple: {
-        enabled: false,
-      },
+  it("parses kupikod and apple-app-store with brand validation", () => {
+    const config = parseSourcesConfig(VALID_CONFIG, {
+      brandsPath: new URL("../../../brands.yaml", import.meta.url).pathname,
     });
+
+    assert.equal(config.sources.length, 2);
+    assert.equal(config.sources[0].id, "kupikod");
+    assert.equal(config.sources[0].categories[0].url, "https://kupikod.com/shop/catalog");
+    assert.equal(config.sources[1].id, "apple-app-store");
   });
 
-  it("treats missing sections as disabled", () => {
-    const config = parseSourcesConfig("kupikod:\n  enabled: false\n");
-
-    assert.deepEqual(config, {
-      kupikod: { enabled: false },
-      apple: { enabled: false },
-    });
+  it("rejects unknown brand with field path", () => {
+    assert.throws(
+      () =>
+        parseSourcesConfig(
+          `
+sources:
+  - id: kupikod
+    base_url: https://kupikod.com
+    rate_limit_rps: 1
+    categories:
+      - url: https://kupikod.com/catalog
+        brand: netflix
+`,
+          {
+            brandsPath: new URL("../../../brands.yaml", import.meta.url).pathname,
+          },
+        ),
+      /sources\[0\]\.categories\[0\]\.brand: unknown brand "netflix"/,
+    );
   });
 
-  it("rejects invalid enabled type", () => {
+  it("rejects invalid rate_limit_rps", () => {
     assert.throws(
       () =>
         parseSourcesConfig(`
-kupikod:
-  enabled: yes
-apple:
-  enabled: false
+sources:
+  - id: kupikod
+    base_url: https://kupikod.com
+    rate_limit_rps: -1
+    categories:
+      - url: https://kupikod.com/catalog
+        brand: apple
 `),
-      /enabled.*boolean/,
+      /sources\[0\]\.rate_limit_rps/,
     );
   });
 
   it("rejects non-object root", () => {
-    assert.throws(() => parseSourcesConfig("- item\n"), /root must be an object/);
+    assert.throws(
+      () => parseSourcesConfig("- item\n"),
+      /Expected object, received array/,
+    );
   });
 });

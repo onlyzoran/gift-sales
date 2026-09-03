@@ -1,5 +1,5 @@
 {
-  "name": "@gift-sales/collector",
+  "name": "@gift-sales/config",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -8,9 +8,8 @@
     "test": "node --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
-    "@gift-sales/adapters": "*",
-    "@gift-sales/config": "*",
-    "@gift-sales/storage": "*"
+    "js-yaml": "^4.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

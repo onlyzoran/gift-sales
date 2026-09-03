@@ -1,9 +1,8 @@
 export {
   loadSourcesConfig,
   parseSourcesConfig,
-  type AppleSourceConfig,
-  type KupikodSourceConfig,
-  type SourcesConfig,
+  type SourceEntry,
+  type SourcesRegistry,
 } from "./config";
 export {
   formatCollectLog,

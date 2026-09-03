@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 (2026-09-03)
+
+* Реестр sources.yaml со схемой и загрузчиком ([PR](https://github.com/onlyzoran/gift-sales/pull/8), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/49))
+
 ## 0.1.7 (2026-09-03)
 
 * UI сравнения цен на главной (Ant Design) ([PR](https://github.com/onlyzoran/gift-sales/pull/7), [issue](https://github.com/onlyzoran/win-predict-ai-orchestrator/issues/48))

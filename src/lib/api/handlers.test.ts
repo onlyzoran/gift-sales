@@ -95,31 +95,59 @@ describe("parseOptionalFaceValue", () => {
 });
 
 describe("buildSourceResponses", () => {
-  it("merges yaml metadata with db timestamps", () => {
+  it("merges registry entries with db timestamps", () => {
     const responses = buildSourceResponses(
       {
-        kupikod: {
-          enabled: true,
-          catalog_url: "https://kupikod.com/catalog",
-        },
-        apple: {
-          enabled: false,
-        },
+        sources: [
+          {
+            id: "kupikod",
+            base_url: "https://kupikod.com",
+            rate_limit_rps: 2,
+            categories: [
+              {
+                url: "https://kupikod.com/catalog",
+                brand: "apple",
+              },
+            ],
+          },
+          {
+            id: "apple-app-store",
+            base_url: "https://www.apple.com",
+            rate_limit_rps: 1,
+            categories: [
+              {
+                url: "https://www.apple.com/shop/gift-cards",
+                brand: "apple",
+              },
+            ],
+          },
+        ],
       },
       [{ source: "kupikod", last_fetched_at: "2026-09-01T12:00:00.000Z" }],
     );
 
     assert.deepEqual(responses, [
       {
-        source: "apple",
+        id: "apple-app-store",
+        base_url: "https://www.apple.com",
+        categories: [
+          {
+            url: "https://www.apple.com/shop/gift-cards",
+            brand: "apple",
+          },
+        ],
         last_fetched_at: null,
-        enabled: false,
       },
       {
-        source: "kupikod",
+        id: "kupikod",
+        base_url: "https://kupikod.com",
+        categories: [
+          {
+            url: "https://kupikod.com/catalog",
+            brand: "apple",
+          },
+        ],
         last_fetched_at: "2026-09-01T12:00:00.000Z",
-        enabled: true,
-        catalog_url: "https://kupikod.com/catalog",
       },
     ]);
   });

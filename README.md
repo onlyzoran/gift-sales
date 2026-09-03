@@ -31,6 +31,7 @@ src/
   components/   — React-компоненты UI
 packages/
   collector/    — cron-сбор цен с источников
+  config/       — парсинг sources.yaml (YAML + zod)
   adapters/     — адаптеры к внешним API и форматам
   storage/      — модель Quote и SQLite-репозиторий
 ```
@@ -58,6 +59,39 @@ curl "http://localhost:3000/gift-sales/api/quotes?brand=apple"
 curl "http://localhost:3000/gift-sales/api/quotes/best?brand=apple"
 curl "http://localhost:3000/gift-sales/api/sources"
 ```
+
+## Добавление источника
+
+Реестр источников — `sources.yaml` в корне репозитория. Формат:
+
+```yaml
+sources:
+  - id: my-source          # уникальный идентификатор (используется в БД и API)
+    base_url: https://example.com
+    rate_limit_rps: 1      # лимит HTTP-запросов в секунду при live-сборе
+    categories:
+      - url: https://example.com/catalog/apple
+        brand: apple       # бренд из whitelist brands.yaml
+```
+
+| Поле | Описание |
+|------|----------|
+| `id` | Уникальный ключ источника; попадает в поле `source` котировок в SQLite |
+| `base_url` | Базовый URL площадки |
+| `rate_limit_rps` | Положительное число — макс. запросов/сек при сборе без `--dry-run` |
+| `categories[].url` | URL каталога или категории для парсинга |
+| `categories[].brand` | Бренд из `brands.yaml` (`apple`, `steam`, …) |
+
+Парсинг и zod-валидация — пакет `@gift-sales/config`. При ошибке конфигурации сообщение начинается с `sources.yaml:` и содержит путь к полю, например `sources[0].categories[1].brand`.
+
+Проверка после правки:
+
+```bash
+npm run test
+npm run collect -- --dry-run
+```
+
+`--dry-run` прогоняет collector на fixture HTML без live HTTP.
 
 ## Демо
 

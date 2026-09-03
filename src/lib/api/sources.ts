@@ -1,65 +1,52 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import yaml from "js-yaml";
-
+import {
+  parseSourcesRegistry,
+  type SourcesRegistry,
+} from "@gift-sales/config";
 import type { SourceResponse } from "@gift-sales/storage";
 
-type SourceSection = {
-  enabled?: boolean;
-  catalog_url?: string;
-};
-
-export type SourcesYaml = Record<string, SourceSection>;
+import { getKnownBrands } from "./brands";
 
 const DEFAULT_SOURCES_PATH = join(process.cwd(), "sources.yaml");
 
-export function loadSourcesYaml(
+export function loadSourcesRegistryFromFile(
   configPath: string = process.env.SOURCES_CONFIG_PATH ?? DEFAULT_SOURCES_PATH,
-): SourcesYaml {
+): SourcesRegistry {
   const content = readFileSync(configPath, "utf8");
-  const parsed = yaml.load(content);
-
-  if (parsed === undefined || parsed === null) {
-    throw new Error("sources.yaml: config is empty");
-  }
-
-  if (typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("sources.yaml: root must be an object");
-  }
-
-  return parsed as SourcesYaml;
+  return parseSourcesRegistry(content, { knownBrands: getKnownBrands() });
 }
 
 export function buildSourceResponses(
-  yamlSources: SourcesYaml,
+  registry: SourcesRegistry,
   dbSources: Array<{ source: string; last_fetched_at: string }>,
 ): SourceResponse[] {
   const fetchedBySource = new Map(
     dbSources.map((row) => [row.source, row.last_fetched_at]),
   );
 
-  const sourceNames = new Set([
-    ...Object.keys(yamlSources),
-    ...dbSources.map((row) => row.source),
-  ]);
+  const registryIds = new Set(registry.sources.map((source) => source.id));
+  const orphanDbSources = dbSources.filter((row) => !registryIds.has(row.source));
 
-  return Array.from(sourceNames)
-    .sort((a, b) => a.localeCompare(b))
-    .map((source) => {
-      const meta = yamlSources[source];
-      const response: SourceResponse = {
-        source,
-        last_fetched_at: fetchedBySource.get(source) ?? null,
-      };
+  const responses: SourceResponse[] = registry.sources.map((source) => ({
+    id: source.id,
+    base_url: source.base_url,
+    categories: source.categories.map((category) => ({
+      url: category.url,
+      brand: category.brand,
+    })),
+    last_fetched_at: fetchedBySource.get(source.id) ?? null,
+  }));
 
-      if (meta?.enabled !== undefined) {
-        response.enabled = meta.enabled;
-      }
-      if (typeof meta?.catalog_url === "string") {
-        response.catalog_url = meta.catalog_url;
-      }
-
-      return response;
+  for (const row of orphanDbSources) {
+    responses.push({
+      id: row.source,
+      base_url: "",
+      categories: [],
+      last_fetched_at: row.last_fetched_at,
     });
+  }
+
+  return responses.sort((left, right) => left.id.localeCompare(right.id));
 }

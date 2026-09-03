@@ -63,15 +63,20 @@ Query:
 Ответ `200`: JSON-массив:
 
 ```ts
+type SourceCategoryResponse = {
+  url: string;
+  brand: string;
+};
+
 type SourceResponse = {
-  source: string;
-  last_fetched_at: string | null; // MAX fetched_at в БД
-  enabled?: boolean;              // из sources.yaml
-  catalog_url?: string;           // из sources.yaml
+  id: string;
+  base_url: string;
+  categories: SourceCategoryResponse[];
+  last_fetched_at: string | null; // MAX fetched_at в БД по id источника
 };
 ```
 
-Источники из `sources.yaml` и из БД объединяются; без строк в БД — `last_fetched_at: null`.
+Источники из `sources.yaml` (реестр `sources[]`) объединяются с записями в БД; без строк в БД — `last_fetched_at: null`.
 
 ## QuoteRepository
 

@@ -7,9 +7,8 @@ import {
   createRateLimitedFetch,
   type FetchHtml,
 } from "@gift-sales/adapters";
+import type { SourceEntry, SourcesRegistry } from "@gift-sales/config";
 import { QuoteRepository, type Quote } from "@gift-sales/storage";
-
-import type { SourcesConfig } from "./config";
 
 export type CollectError = {
   source: string;
@@ -32,7 +31,7 @@ export type CollectRunResult = {
 };
 
 export type RunCollectOptions = {
-  config: SourcesConfig;
+  config: SourcesRegistry;
   dbPath: string;
   dryRun?: boolean;
   fetchedAt?: string;
@@ -67,31 +66,90 @@ function ensureDbDirectory(dbPath: string): void {
   mkdirSync(dirname(dbPath), { recursive: true });
 }
 
+function createSourceFetch(
+  source: SourceEntry,
+  dryRun: boolean | undefined,
+  overrideFetch: FetchHtml | undefined,
+): FetchHtml {
+  if (overrideFetch) {
+    return overrideFetch;
+  }
+
+  if (dryRun) {
+    return createFixtureFetch();
+  }
+
+  const minIntervalMs = Math.ceil(1000 / source.rate_limit_rps);
+  return createRateLimitedFetch({ minIntervalMs });
+}
+
 async function collectFromKupikod(
-  config: SourcesConfig,
+  source: SourceEntry,
   fetchedAt: string,
   fetchHtml: FetchHtml,
 ): Promise<SourceRunResult> {
-  const source = "kupikod";
   const errors: CollectError[] = [];
-  const collectingFetch = createErrorCollectingFetch(fetchHtml, source, errors);
+  const collectingFetch = createErrorCollectingFetch(fetchHtml, source.id, errors);
+  const quotes: Quote[] = [];
 
-  try {
-    const quotes = await collectKupikodAppleQuotes({
-      catalogUrl: config.kupikod.catalog_url,
-      fetchHtml: collectingFetch,
-      fetchedAt,
-    });
-
-    return { source, quotes, errors };
-  } catch (error) {
-    errors.push({
-      source,
-      url: config.kupikod.catalog_url ?? "(catalog)",
-      message: error instanceof Error ? error.message : String(error),
-    });
-    return { source, quotes: [], errors };
+  for (const category of source.categories) {
+    try {
+      const categoryQuotes = await collectKupikodAppleQuotes({
+        catalogUrl: category.url,
+        fetchHtml: collectingFetch,
+        fetchedAt,
+      });
+      quotes.push(...categoryQuotes);
+    } catch (error) {
+      errors.push({
+        source: source.id,
+        url: category.url,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
+
+  return { source: source.id, quotes, errors };
+}
+
+async function collectFromAppleAppStore(
+  source: SourceEntry,
+): Promise<SourceRunResult> {
+  return {
+    source: source.id,
+    quotes: [],
+    errors: source.categories.map((category) => ({
+      source: source.id,
+      url: category.url,
+      message: "Apple App Store adapter is not implemented yet",
+    })),
+  };
+}
+
+async function collectFromSource(
+  source: SourceEntry,
+  fetchedAt: string,
+  fetchHtml: FetchHtml,
+): Promise<SourceRunResult> {
+  if (source.id === "kupikod") {
+    return collectFromKupikod(source, fetchedAt, fetchHtml);
+  }
+
+  if (source.id === "apple-app-store") {
+    return collectFromAppleAppStore(source);
+  }
+
+  return {
+    source: source.id,
+    quotes: [],
+    errors: [
+      {
+        source: source.id,
+        url: source.base_url,
+        message: `No collector adapter registered for source "${source.id}"`,
+      },
+    ],
+  };
 }
 
 export async function runCollect(
@@ -99,30 +157,12 @@ export async function runCollect(
 ): Promise<{ result: CollectRunResult; exitCode: number }> {
   const startedAt = Date.now();
   const fetchedAt = options.fetchedAt ?? new Date().toISOString();
-  const fetchHtml =
-    options.fetchHtml ??
-    (options.dryRun ? createFixtureFetch() : createRateLimitedFetch());
 
   const sourceResults: SourceRunResult[] = [];
 
-  if (options.config.kupikod.enabled) {
-    sourceResults.push(
-      await collectFromKupikod(options.config, fetchedAt, fetchHtml),
-    );
-  }
-
-  if (options.config.apple.enabled) {
-    sourceResults.push({
-      source: "apple",
-      quotes: [],
-      errors: [
-        {
-          source: "apple",
-          url: "(source)",
-          message: "Apple adapter is not implemented yet",
-        },
-      ],
-    });
+  for (const source of options.config.sources) {
+    const fetchHtml = createSourceFetch(source, options.dryRun, options.fetchHtml);
+    sourceResults.push(await collectFromSource(source, fetchedAt, fetchHtml));
   }
 
   const quotes: Quote[] = [];
@@ -147,9 +187,7 @@ export async function runCollect(
     }
   }
 
-  const enabledSources = sourceResults.length;
-  const exitCode =
-    enabledSources === 0 || quotes.length === 0 ? 1 : 0;
+  const exitCode = quotes.length === 0 ? 1 : 0;
 
   return {
     result: {

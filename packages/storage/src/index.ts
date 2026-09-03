@@ -2,6 +2,7 @@ export type {
   ApiErrorCode,
   ApiErrorResponse,
   QuoteResponse,
+  SourceCategoryResponse,
   SourceResponse,
 } from "./api-types";
 export { API_ERROR_CODES } from "./api-types";

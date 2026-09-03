@@ -5,11 +5,45 @@ import { join } from "node:path";
 import { afterEach, describe, it } from "node:test";
 
 import { createFixtureFetch } from "@gift-sales/adapters";
+import type { SourcesRegistry } from "@gift-sales/config";
 import { QuoteRepository } from "@gift-sales/storage";
 
 import { formatCollectLog, runCollect } from "./run";
 
 const FETCHED_AT = "2026-09-02T12:00:00.000Z";
+
+const KUPIKOD_ONLY_REGISTRY: SourcesRegistry = {
+  sources: [
+    {
+      id: "kupikod",
+      base_url: "https://kupikod.com",
+      rate_limit_rps: 2,
+      categories: [
+        {
+          url: "https://kupikod.com/shop/podarocnye-karty/appstore-itunes",
+          brand: "apple",
+        },
+      ],
+    },
+  ],
+};
+
+const FULL_REGISTRY: SourcesRegistry = {
+  sources: [
+    ...KUPIKOD_ONLY_REGISTRY.sources,
+    {
+      id: "apple-app-store",
+      base_url: "https://www.apple.com",
+      rate_limit_rps: 1,
+      categories: [
+        {
+          url: "https://www.apple.com/shop/gift-cards",
+          brand: "apple",
+        },
+      ],
+    },
+  ],
+};
 
 describe("runCollect", () => {
   let tempDir: string;
@@ -26,10 +60,7 @@ describe("runCollect", () => {
     const dbPath = join(tempDir, "quotes.db");
 
     const { result, exitCode } = await runCollect({
-      config: {
-        kupikod: { enabled: true },
-        apple: { enabled: false },
-      },
+      config: KUPIKOD_ONLY_REGISTRY,
       dbPath,
       dryRun: true,
       fetchedAt: FETCHED_AT,
@@ -53,7 +84,7 @@ describe("runCollect", () => {
     }
   });
 
-  it("returns exit code 1 when all enabled sources fail", async () => {
+  it("returns exit code 1 when all sources fail to collect quotes", async () => {
     tempDir = mkdtempSync(join(tmpdir(), "gift-sales-collector-"));
     const dbPath = join(tempDir, "quotes.db");
 
@@ -62,10 +93,7 @@ describe("runCollect", () => {
     };
 
     const { result, exitCode } = await runCollect({
-      config: {
-        kupikod: { enabled: true },
-        apple: { enabled: false },
-      },
+      config: KUPIKOD_ONLY_REGISTRY,
       dbPath,
       fetchedAt: FETCHED_AT,
       fetchHtml: failingFetch,
@@ -79,12 +107,7 @@ describe("runCollect", () => {
 
   it("returns exit code 0 on partial success with at least one quote", async () => {
     const { exitCode } = await runCollect({
-      config: {
-        kupikod: {
-          enabled: true,
-        },
-        apple: { enabled: false },
-      },
+      config: FULL_REGISTRY,
       dbPath: ":memory:",
       fetchedAt: FETCHED_AT,
       fetchHtml: createFixtureFetch(),
@@ -92,6 +115,25 @@ describe("runCollect", () => {
     });
 
     assert.equal(exitCode, 0);
+  });
+
+  it("logs apple-app-store as not implemented without aborting kupikod", async () => {
+    const { result, exitCode } = await runCollect({
+      config: FULL_REGISTRY,
+      dbPath: ":memory:",
+      dryRun: true,
+      fetchedAt: FETCHED_AT,
+      fetchHtml: createFixtureFetch(),
+      skipPersist: true,
+    });
+
+    assert.equal(exitCode, 0);
+    assert.ok(result.quotes.length > 0);
+    assert.ok(
+      result.errors.some((error) =>
+        error.message.includes("Apple App Store adapter is not implemented yet"),
+      ),
+    );
   });
 
   it("records per-url fetch errors without aborting the run", async () => {
@@ -105,10 +147,7 @@ describe("runCollect", () => {
     };
 
     const { result, exitCode } = await runCollect({
-      config: {
-        kupikod: { enabled: true },
-        apple: { enabled: false },
-      },
+      config: KUPIKOD_ONLY_REGISTRY,
       dbPath: ":memory:",
       fetchedAt: FETCHED_AT,
       fetchHtml,
