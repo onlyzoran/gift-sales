@@ -82,3 +82,99 @@ export function parseOptionalRegion(
 
   return rawRegion.trim();
 }
+
+type RequiredFaceValueResult =
+  | { ok: true; faceValue: number }
+  | { ok: false; response: ReturnType<typeof apiError> };
+
+export function parseRequiredFaceValue(
+  rawFaceValue: string | null,
+): RequiredFaceValueResult {
+  if (rawFaceValue === null || rawFaceValue.trim() === "") {
+    return {
+      ok: false,
+      response: apiError(
+        400,
+        API_ERROR_CODES.MISSING_FACE_VALUE,
+        'Query parameter "face_value" is required',
+      ),
+    };
+  }
+
+  const faceValue = Number(rawFaceValue);
+  if (!Number.isFinite(faceValue) || faceValue <= 0) {
+    return {
+      ok: false,
+      response: apiError(
+        400,
+        API_ERROR_CODES.INVALID_FACE_VALUE,
+        'Query parameter "face_value" must be a positive number',
+      ),
+    };
+  }
+
+  return { ok: true, faceValue };
+}
+
+type RequiredRegionResult =
+  | { ok: true; region: string }
+  | { ok: false; response: ReturnType<typeof apiError> };
+
+export function parseRequiredRegion(
+  rawRegion: string | null,
+): RequiredRegionResult {
+  if (rawRegion === null || rawRegion.trim() === "") {
+    return {
+      ok: false,
+      response: apiError(
+        400,
+        API_ERROR_CODES.MISSING_REGION,
+        'Query parameter "region" is required',
+      ),
+    };
+  }
+
+  return { ok: true, region: rawRegion.trim() };
+}
+
+type OptionalIsoDateResult =
+  | { ok: true; value: string | undefined }
+  | { ok: false; response: ReturnType<typeof apiError> };
+
+function parseOptionalIso8601Utc(
+  rawValue: string | null,
+  paramName: "from" | "to",
+): OptionalIsoDateResult {
+  if (rawValue === null || rawValue.trim() === "") {
+    return { ok: true, value: undefined };
+  }
+
+  const trimmed = rawValue.trim();
+  const timestamp = Date.parse(trimmed);
+  if (Number.isNaN(timestamp)) {
+    const code =
+      paramName === "from"
+        ? API_ERROR_CODES.INVALID_FROM
+        : API_ERROR_CODES.INVALID_TO;
+    return {
+      ok: false,
+      response: apiError(
+        400,
+        code,
+        `Query parameter "${paramName}" must be a valid ISO 8601 UTC datetime`,
+      ),
+    };
+  }
+
+  return { ok: true, value: new Date(timestamp).toISOString() };
+}
+
+export function parseOptionalFrom(
+  rawFrom: string | null,
+): OptionalIsoDateResult {
+  return parseOptionalIso8601Utc(rawFrom, "from");
+}
+
+export function parseOptionalTo(rawTo: string | null): OptionalIsoDateResult {
+  return parseOptionalIso8601Utc(rawTo, "to");
+}
